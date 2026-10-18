@@ -105,22 +105,16 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); o
 .seg button:last-child { border-radius: 0 8px 8px 0; }
 .seg button[aria-checked="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); position: relative; }
 
-main {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
-}
+main { display: flex; flex-direction: column; }
 
-@media (max-width: 820px) {
-  main { grid-template-columns: minmax(0, 1fr); }
-}
+.details-toggle { display: flex; justify-content: center; margin: 0 0 16px; }
 
 .wheel-area { display: flex; flex-direction: column; align-items: center; }
 
 #wheel {
   width: 100%;
-  max-width: 560px;
+  /* Leave room for the staff below the wheel on short (landscape) screens. */
+  max-width: max(300px, min(560px, calc(100svh - 440px)));
   aspect-ratio: 1;
   touch-action: none;
   user-select: none;
@@ -177,6 +171,7 @@ main {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 16px 18px;
+  margin-bottom: 16px;
 }
 .info .title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .info .title .chordname { color: var(--accent); font-weight: 700; font-size: 1.15rem; }
@@ -191,20 +186,12 @@ main {
 .chords .rn { font-weight: 700; white-space: nowrap; }
 .chords .nm { font-weight: 600; white-space: nowrap; }
 .chords .nt { color: var(--muted); }
-.chords button, .prog button { min-height: 34px; padding: 2px 10px; }
+.chords button { min-height: 34px; padding: 2px 10px; }
 
 .badge { display: inline-block; font-size: 0.72rem; padding: 1px 8px; border-radius: 99px; color: #fff; white-space: nowrap; }
 .badge.home { background: var(--home); }
 .badge.away { background: var(--away); }
 .badge.tension { background: var(--tension); }
-
-.prog { list-style: none; margin: 0; padding: 0; }
-.prog li { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line); }
-.prog li.playing { color: var(--accent); }
-.prog .pt { flex: 1; min-width: 0; }
-.prog .pn { font-weight: 600; }
-.prog .pc { font-size: 0.88rem; color: var(--muted); }
-.prog .pd { font-size: 0.82rem; color: var(--muted); }
 
 /* Staff */
 .staff-area {
@@ -212,14 +199,14 @@ main {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 14px 16px 6px;
-  margin: 24px 0 16px;
+  margin: 16px 0;
 }
 .staff-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
 .play { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .tempo { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 0.9rem; }
 .tempo input { width: 110px; accent-color: var(--accent); }
 #staff { overflow-x: auto; }
-#staff svg { display: block; width: 100%; min-width: 520px; max-height: 240px; margin: 4px auto 0; }
+#staff svg { display: block; width: 100%; min-width: 520px; max-height: 190px; margin: 4px auto 0; }
 .staff text { text-anchor: middle; }
 .sline, .ledger, .bar { stroke: var(--ink); stroke-width: 1; }
 .ledger { stroke-width: 1.2; }
