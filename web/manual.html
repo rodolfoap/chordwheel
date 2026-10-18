@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChordWheel Manual</title>
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --bg: #f6f3ec; --panel: #fffdf8; --ink: #1f2430; --muted: #6b6f7a; --line: #d9d3c6;
+      --accent: #d2553b; --home: #2f6f63; --away: #3b5a9a; --tension: #8a4a7a;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14161c; --panel: #1d2029; --ink: #ecebe6; --muted: #9aa0ad; --line: #343846;
+        --accent: #ef7a5c; --home: #3f8c7e; --away: #5272b8; --tension: #a65f95;
+        color-scheme: dark;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    article { max-width: 780px; margin: 0 auto; padding: 24px 16px 48px; }
+    h1 { font-size: 1.7rem; margin: 0 0 4px; }
+    h2 { font-size: 1.3rem; margin: 40px 0 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+    h3 { font-size: 1.05rem; margin: 26px 0 6px; }
+    .lead { color: var(--muted); margin-top: 0; }
+    figure { margin: 16px 0; text-align: center; }
+    figure img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); }
+    figure.wheel img { max-width: min(100%, 440px); }
+    figcaption { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
+    .note { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 10px 14px; margin: 14px 0; }
+    .try { display: inline-block; margin: 4px 0; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--accent); color: var(--accent); background: transparent; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .try:hover { background: var(--accent); color: var(--panel); }
+    table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 0.95rem; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+    .form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 10px 0; }
+    .form div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 4px; text-align: center; font-weight: 600; }
+    .form .db { border-color: var(--away); color: var(--away); }
+    .form .cm { border-color: var(--home); color: var(--home); }
+    .form small { display: block; font-weight: 400; color: var(--muted); font-size: 0.75rem; }
+    .legend span { display: inline-block; padding: 0 8px; border-radius: 99px; color: #fff; font-size: 0.82rem; }
+    ul, ol { padding-left: 22px; }
+    li { margin: 4px 0; }
+    kbd { font: 0.85em ui-monospace, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--panel); }
+    a { color: var(--accent); }
+    nav ol { columns: 2; column-gap: 24px; }
+    @media (max-width: 560px) { nav ol { columns: 1; } .form { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  </style>
+</head>
+<body>
+<article>
+  <h1>ChordWheel Manual</h1>
+  <p class="lead">A digital version of the paper chord wheel: turn the inner wheel to find the notes, chords and modes of any key.</p>
+
+  <nav>
+    <ol>
+      <li><a href="#tour">A tour of the wheel</a></li>
+      <li><a href="#controls">Controls</a></li>
+      <li><a href="#bossa">Worked example: Blue Bossa</a></li>
+      <li><a href="#practice">Practising with the app</a></li>
+      <li><a href="#install">Installing on Android</a></li>
+      <li><a href="#words">Words you will meet</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="tour">1. A tour of the wheel</h2>
+  <figure class="wheel">
+    <img src="manual/overview.png" alt="The wheel set to C major: degree I points at C" width="547" height="595" loading="lazy">
+    <figcaption>The wheel set to C major, with degree I selected.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>The outer ring</strong> is fixed and holds the 12 notes. Pale notes belong to the current key, grey ones don't, and the orange ones are the notes of the selected chord. The underlined note is the home note (tonic) of the selected mode, and the small numbers show each note's step in that mode.</li>
+    <li><strong>The inner wheel</strong> turns. It holds the seven chords of a major key, on the seven <em>degrees</em> I to vii. The little white arrow marks degree I: the note it points at is the key. Slots with only a tick mark are notes outside the key.</li>
+    <li>Each degree shows its <strong>roman numeral and chord type</strong> (e.g. iim7), the <strong>mode</strong> that starts on it (Dorian), and the <strong>chord name</strong> in the current key (Dm7).</li>
+    <li>The colours tell you what a chord tends to do:
+      <span class="legend"><span style="background:var(--home)">Home</span> chords feel at rest,
+      <span style="background:var(--away)">Away</span> chords move away from home, and
+      <span style="background:var(--tension)">Tension</span> chords want to resolve back to I.</span></li>
+    <li><strong>The centre</strong> shows the selected chord, its mode and the parent key.</li>
+    <li><strong>The staff</strong> at the bottom shows the selected mode as a scale, with the key signature, the note names and the step numbers, followed by the selected chord.</li>
+  </ul>
+  <p><a class="try" data-wheel="k=0&d=0&a=2&s=1&f=0" href="index.html#k=0&d=0&a=2&s=1&f=0">Show C major on the wheel</a></p>
+
+  <h2 id="controls">2. Controls</h2>
+  <table>
+    <tr><th>To do this</th><th>Do this</th></tr>
+    <tr><td>Change key</td><td>Drag the inner wheel, or use <kbd>⟲</kbd> <kbd>⟳</kbd> (or the arrow keys on a keyboard). The wheel snaps to the nearest note.</td></tr>
+    <tr><td>Pick a chord and its mode</td><td>Tap a coloured degree, a row of the chord table, or press <kbd>1</kbd>–<kbd>7</kbd>. You hear the chord.</td></tr>
+    <tr><td>Jump to a scale, e.g. A Phrygian</td><td>Choose it in the <strong>Tonic</strong> and <strong>Mode</strong> menus. Changing the mode keeps the tonic, so you can compare C Ionian, C Dorian, C Phrygian and so on.</td></tr>
+    <tr><td>Hear a note</td><td>Tap it on the outer ring or on the staff.</td></tr>
+    <tr><td>Hear the scale or chord</td><td><strong>▶ Scale</strong> plays the mode up and down; <strong>▶ Chord</strong> (or tapping the centre) plays the chord. <strong>Tempo</strong> sets the speed.</td></tr>
+    <tr><td>Hear a progression</td><td>Press ▶ next to a progression. The wheel follows along chord by chord.</td></tr>
+    <tr><td>♯ / ♭ / Auto</td><td>Names the black keys with sharps or flats. <strong>Auto</strong> spells every note the way the current key does (B♭ in F major, F♯ in G major).</td></tr>
+    <tr><td>7ths / Triads</td><td>Four-note seventh chords (Cmaj7) or three-note triads (C).</td></tr>
+    <tr><td>Chromatic / Fifths</td><td>Lays both wheels out by semitones or around the circle of fifths.</td></tr>
+  </table>
+  <p>The address bar remembers the wheel's position, so you can bookmark a key or send it to someone.</p>
+
+  <h2 id="bossa">3. Worked example: Blue Bossa</h2>
+  <p><em>Blue Bossa</em> (Kenny Dorham, 1963) is a favourite first jazz tune because it uses just two keys: it starts in <strong>C minor</strong> and moves to <strong>D♭ major</strong> in the middle. Here is its 16-bar form, one box per bar:</p>
+  <div class="form">
+    <div class="cm">Cm7<small>i</small></div><div class="cm">Cm7<small>i</small></div><div class="cm">Fm7<small>iv</small></div><div class="cm">Fm7<small>iv</small></div>
+    <div class="cm">Dm7♭5<small>ii</small></div><div class="cm">G7<small>V</small></div><div class="cm">Cm7<small>i</small></div><div class="cm">Cm7<small>i</small></div>
+    <div class="db">E♭m7<small>ii in D♭</small></div><div class="db">A♭7<small>V in D♭</small></div><div class="db">D♭maj7<small>I in D♭</small></div><div class="db">D♭maj7<small>I in D♭</small></div>
+    <div class="cm">Dm7♭5<small>ii</small></div><div class="cm">G7<small>V</small></div><div class="cm">Cm7<small>i</small></div><div class="cm">Dm7♭5 G7<small>ii V</small></div>
+  </div>
+  <div class="note">A common mix-up: the middle section is in <strong>D♭ major</strong> (five flats), not D major. The chords E♭m7, A♭7 and D♭maj7 only fit D♭.</div>
+
+  <h3>Part 1: C minor, which is C Aeolian</h3>
+  <p>C minor (the natural minor) is the <strong>Aeolian</strong> mode on C. On the wheel, Aeolian lives on degree <strong>vi</strong>, so turn the wheel until <strong>vim7</strong> sits over C. Degree I then points at E♭: C minor shares its notes with E♭ major, its <em>relative major</em>. You can also just choose Tonic <strong>C</strong> and Mode <strong>Aeolian</strong>.</p>
+  <p><a class="try" data-wheel="k=3&d=5&a=2&s=1&f=0" href="index.html#k=3&d=5&a=2&s=1&f=0">Show C Aeolian on the wheel</a></p>
+  <figure class="wheel">
+    <img src="manual/c-aeolian.png" alt="The wheel with vim7 over C, showing C Aeolian in the key of E-flat major" width="547" height="595" loading="lazy">
+    <figcaption>vim7 over C. Degree I points at E♭, the relative major.</figcaption>
+  </figure>
+  <figure>
+    <img src="manual/c-aeolian-staff.png" alt="Staff showing C Aeolian: C D E-flat F G A-flat B-flat C, with three flats in the key signature" width="1068" height="307" loading="lazy">
+    <figcaption>The scale to improvise with in bars 1–8: C D E♭ F G A♭ B♭, three flats.</figcaption>
+  </figure>
+  <p>Now read the A-section chords straight off the wheel:</p>
+  <table>
+    <tr><th>Bar</th><th>Chord</th><th>On the wheel</th><th>Mode to play</th></tr>
+    <tr><td>1–2, 7–8</td><td>Cm7</td><td>vim7</td><td>C Aeolian</td></tr>
+    <tr><td>3–4</td><td>Fm7</td><td>iim7</td><td>F Dorian</td></tr>
+    <tr><td>5, 13</td><td>Dm7♭5</td><td>viim7♭5</td><td>D Locrian</td></tr>
+    <tr><td>6, 14</td><td>G7</td><td>not on the wheel (it shows Gm7)</td><td>see below</td></tr>
+  </table>
+  <p>Notice that C Aeolian, F Dorian and D Locrian are all the <em>same seven notes</em>. Tap each chord on the wheel and watch the staff: only the starting note changes. That is what modes are.</p>
+  <div class="note"><strong>Why G7 and not Gm7?</strong> The wheel only shows chords made from the key's own notes, and in C minor the chord on G is Gm7 (G B♭ D F). Composers raise B♭ to <strong>B♮</strong> to turn it into G7 (G B D F), because B♮ is a semitone below C and pulls strongly back home to Cm7. So over G7, play the same C minor notes but with B♮ instead of B♭ (this is the <em>C harmonic minor</em> scale). The Dm7♭5 – G7 – Cm7 move is the minor-key version of the jazz ii–V–I.</div>
+
+  <h3>Part 2: D♭ major, which is D♭ Ionian</h3>
+  <p>In bars 9–12 the tune slides into D♭ major for a classic <strong>ii–V–I</strong>. Turn the wheel so that <strong>Imaj7</strong> points at D♭ (Tonic <strong>D♭</strong>, Mode <strong>Ionian</strong>).</p>
+  <p><a class="try" data-wheel="k=1&d=0&a=2&s=1&f=0" href="index.html#k=1&d=0&a=2&s=1&f=0">Show D♭ Ionian on the wheel</a></p>
+  <figure class="wheel">
+    <img src="manual/db-ionian.png" alt="The wheel with Imaj7 over D-flat" width="547" height="595" loading="lazy">
+    <figcaption>Imaj7 over D♭: the bridge key.</figcaption>
+  </figure>
+  <figure>
+    <img src="manual/db-ionian-staff.png" alt="Staff showing D-flat Ionian with five flats" width="1068" height="307" loading="lazy">
+    <figcaption>D♭ E♭ F G♭ A♭ B♭ C: five flats.</figcaption>
+  </figure>
+  <p>The three chords of the bridge are right there, on ii, V and I:</p>
+  <table>
+    <tr><th>Bar</th><th>Chord</th><th>On the wheel</th><th>Mode to play</th></tr>
+    <tr><td>9</td><td>E♭m7</td><td>iim7</td><td>E♭ Dorian</td></tr>
+    <tr><td>10</td><td>A♭7</td><td>V7</td><td>A♭ Mixolydian</td></tr>
+    <tr><td>11–12</td><td>D♭maj7</td><td>Imaj7</td><td>D♭ Ionian</td></tr>
+  </table>
+  <figure class="wheel">
+    <img src="manual/db-ii.png" alt="The wheel in D-flat major with iim7 selected: E-flat minor 7, E-flat Dorian" width="547" height="595" loading="lazy">
+    <figcaption>Tap ii in D♭ to see E♭m7 and E♭ Dorian.</figcaption>
+  </figure>
+  <p>Press ▶ next to <strong>Jazz ii–V–I</strong> in the progression list while in D♭ to hear exactly bars 9–11.</p>
+
+  <h3>Why the change of key sounds smooth</h3>
+  <p>Switch the layout to <strong>Fifths</strong>. Keys that share the most notes sit next to each other. E♭ major (the parent of C minor) and D♭ major are only two steps apart, so only two notes change: D becomes D♭ and G becomes G♭. Everything else stays the same.</p>
+  <p><a class="try" data-wheel="k=3&d=5&a=2&s=1&f=1" href="index.html#k=3&d=5&a=2&s=1&f=1">Show C Aeolian on the circle of fifths</a></p>
+  <figure class="wheel">
+    <img src="manual/fifths.png" alt="The wheel in circle-of-fifths layout, with the seven notes of C minor next to each other" width="547" height="595" loading="lazy">
+    <figcaption>In the Fifths layout a key's seven notes sit together. Turn two clicks counter-clockwise to reach D♭.</figcaption>
+  </figure>
+
+  <h3>The whole tune at a glance</h3>
+  <table>
+    <tr><th>Bars</th><th>Wheel setting</th><th>Notes to use</th></tr>
+    <tr><td>1–8</td><td>vi over C (key of E♭)</td><td>C D E♭ F G A♭ B♭ (B♮ over G7)</td></tr>
+    <tr><td>9–12</td><td>I over D♭</td><td>D♭ E♭ F G♭ A♭ B♭ C</td></tr>
+    <tr><td>13–16</td><td>vi over C again</td><td>C D E♭ F G A♭ B♭ (B♮ over G7)</td></tr>
+  </table>
+
+  <h2 id="practice">4. Practising with the app</h2>
+  <ol>
+    <li>Pick a key and press <strong>▶ Scale</strong>. Sing or play along.</li>
+    <li>Tap each degree in turn and listen: which chords sound like home, which want to move?</li>
+    <li>Play the <strong>Pop</strong> progression, then turn the wheel one step and play it again. Same shape, new key.</li>
+    <li>Choose Tonic C and step through the modes from the Mode menu. Listen to how each one colours the same home note.</li>
+    <li>Take a song you like, find its chords on the wheel, and you have found its key.</li>
+  </ol>
+
+  <h2 id="install">5. Installing on Android</h2>
+  <ol>
+    <li>Open <a href="https://rodolfoap.github.io/chordwheel/" target="_blank" rel="noopener">rodolfoap.github.io/chordwheel</a> in Chrome on the tablet.</li>
+    <li>Open the ⋮ menu and choose <strong>Install app</strong> (or <strong>Add to Home screen</strong>).</li>
+    <li>ChordWheel now opens full screen from its icon and works offline.</li>
+  </ol>
+  <p>On a computer you can also run it locally with <code>python3 -m http.server -d web 8000</code> and open <a href="http://localhost:8000">localhost:8000</a>.</p>
+
+  <h2 id="words">6. Words you will meet</h2>
+  <table>
+    <tr><td><strong>Key</strong></td><td>The set of seven notes a piece mostly uses, named after its home note.</td></tr>
+    <tr><td><strong>Degree</strong></td><td>A note's position in the key, written as a roman numeral: I is the first note, V the fifth.</td></tr>
+    <tr><td><strong>Mode</strong></td><td>The seven notes of a key heard from a different home note. Ionian is the major scale, Aeolian the natural minor.</td></tr>
+    <tr><td><strong>Tonic</strong></td><td>The home note of a key or mode.</td></tr>
+    <tr><td><strong>Relative minor / major</strong></td><td>A minor and a major key that share all their notes, like C minor and E♭ major.</td></tr>
+    <tr><td><strong>maj7, m7, 7, m7♭5</strong></td><td>Seventh chord types: major seventh, minor seventh, dominant seventh, half-diminished.</td></tr>
+    <tr><td><strong>ii–V–I</strong></td><td>The most common chord move in jazz: Away, Tension, Home.</td></tr>
+    <tr><td><strong>Key signature</strong></td><td>The sharps or flats at the start of the staff, which apply to every note of that letter.</td></tr>
+    <tr><td><strong>Circle of fifths</strong></td><td>The 12 keys ordered so that neighbours differ by one sharp or flat.</td></tr>
+  </table>
+</article>
+<script>
+  // Inside the app's popup, the "Show" buttons set the wheel and close the manual.
+  if (window.parent !== window) {
+    document.querySelectorAll('[data-wheel]').forEach((a) => a.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.parent.postMessage({ wheel: '#' + a.dataset.wheel }, location.origin);
+    }));
+  }
+</script>
+</body>
+</html>
