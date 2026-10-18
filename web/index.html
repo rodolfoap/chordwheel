@@ -46,21 +46,24 @@
       <p class="hint">Drag the inner wheel to change key. Tap a degree to hear its chord, or a note to hear it.</p>
     </section>
 
-    <section class="info" id="info"></section>
-  </main>
-
-  <section class="staff-area">
-    <div class="staff-head">
-      <h2 id="staff-title"></h2>
-      <div class="play">
-        <button id="play-scale">▶ Scale</button>
-        <button id="play-chord">▶ Chord</button>
-        <button id="stop" hidden>■ Stop</button>
-        <label class="tempo">Tempo <input id="bpm" type="range" min="50" max="180" step="5" value="100"> <span id="bpm-val"></span></label>
+    <section class="staff-area">
+      <div class="staff-head">
+        <h2 id="staff-title"></h2>
+        <div class="play">
+          <button id="play-scale">▶ Scale</button>
+          <button id="play-chord">▶ Chord</button>
+          <button id="stop" hidden>■ Stop</button>
+          <label class="tempo">Tempo <input id="bpm" type="range" min="50" max="180" step="5" value="100"> <span id="bpm-val"></span></label>
+        </div>
       </div>
+      <div id="staff"></div>
+    </section>
+
+    <div class="details-toggle">
+      <button id="toggle-info" aria-expanded="false" aria-controls="info">Show chord details</button>
     </div>
-    <div id="staff"></div>
-  </section>
+    <section class="info" id="info" hidden></section>
+  </main>
 
   <footer>
     <details>

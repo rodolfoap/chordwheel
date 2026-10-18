@@ -13,17 +13,6 @@ use wasm_bindgen::prelude::*;
 use state::State;
 use theory::*;
 
-/// Well-known progressions, as degrees of the major key (0 = I).
-const PROGRESSIONS: [(&str, &str, &[usize]); 7] = [
-    ("Pop", "The four chords behind countless hits.", &[0, 4, 5, 3]),
-    ("Doo-wop", "The 1950s ballad sound.", &[0, 5, 3, 4]),
-    ("Classic", "Folk, country and early rock and roll.", &[0, 3, 4, 0]),
-    ("Jazz ii–V–I", "The most common move in jazz.", &[1, 4, 0]),
-    ("Sad pop", "The pop progression starting on the minor chord.", &[5, 3, 0, 4]),
-    ("Andalusian", "A descending minor cadence with a flamenco feel.", &[5, 4, 3, 2]),
-    ("Canon", "Pachelbel's Canon and its many descendants.", &[0, 4, 5, 2, 3, 0, 3, 4]),
-];
-
 #[derive(Serialize)]
 struct ChordInfo {
     degree: usize,
@@ -34,15 +23,6 @@ struct ChordInfo {
     function: &'static str,
     mode: &'static str,
     midi: Vec<u8>,
-}
-
-#[derive(Serialize)]
-struct ProgressionInfo {
-    name: &'static str,
-    description: &'static str,
-    roman: String,
-    chords: String,
-    degrees: Vec<usize>,
 }
 
 #[derive(Serialize)]
@@ -58,7 +38,6 @@ struct Info {
     scale_midi: Vec<u8>,
     chord: usize,
     chords: Vec<ChordInfo>,
-    progressions: Vec<ProgressionInfo>,
 }
 
 #[wasm_bindgen]
@@ -173,16 +152,6 @@ impl Wheel {
                 midi: st.chord_midi(d),
             })
             .collect();
-        let progressions = PROGRESSIONS
-            .iter()
-            .map(|(name, description, degs)| ProgressionInfo {
-                name,
-                description,
-                roman: degs.iter().map(|&d| st.roman(d)).collect::<Vec<_>>().join(" – "),
-                chords: degs.iter().map(|&d| st.chord_name(d)).collect::<Vec<_>>().join(" – "),
-                degrees: degs.to_vec(),
-            })
-            .collect();
         let info = Info {
             key: format!("{} major", scale[0].name()),
             signature: key_signature_text(st.signature()),
@@ -195,7 +164,6 @@ impl Wheel {
             scale_midi: st.mode_midi(),
             chord: st.degree,
             chords,
-            progressions,
         };
         serde_json::to_string(&info).unwrap_or_default()
     }

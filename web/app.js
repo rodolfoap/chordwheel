@@ -18,7 +18,6 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 let drag = 0;          // extra rotation of the inner wheel while dragging, in degrees
 let info = null;       // latest info from Rust
 let bpm = 100;
-let playingProg = null;
 let playId = 0;
 let timers = [];
 
@@ -76,15 +75,6 @@ function renderInfo() {
       <td><span class="badge ${ch.function.toLowerCase()}">${ch.function}</span></td>
       <td><button aria-label="Play ${esc(ch.name)}">▶</button></td>
     </tr>`).join('');
-  const progs = info.progressions.map((p, i) => `
-    <li class="${playingProg === i ? 'playing' : ''}">
-      <div class="pt">
-        <div><span class="pn">${esc(p.name)}</span> <span class="pc">${esc(p.roman)}</span></div>
-        <div>${esc(p.chords)}</div>
-        <div class="pd">${esc(p.description)}</div>
-      </div>
-      <button data-prog="${i}" aria-label="Play ${esc(p.name)} progression">▶</button>
-    </li>`).join('');
   infoEl.innerHTML = `
     <div class="title"><h2>${esc(info.mode)}</h2><span class="chordname">${esc(c.name)}</span></div>
     <p>${esc(info.mode_description)}</p>
@@ -94,9 +84,7 @@ function renderInfo() {
       <span>${esc(c.name)} is a <b>${esc(c.quality)}</b>: ${esc(c.notes.join(' '))}</span>
     </div>
     <h3>Chords in ${esc(info.key)}</h3>
-    <table class="chords"><tbody>${rows}</tbody></table>
-    <h3>Try a progression in ${esc(info.key)}</h3>
-    <ul class="prog">${progs}</ul>`;
+    <table class="chords"><tbody>${rows}</tbody></table>`;
 }
 
 function renderControls() {
@@ -181,10 +169,6 @@ function stop() {
   timers.forEach(clearTimeout);
   timers = [];
   $('stop').hidden = true;
-  if (playingProg !== null) {
-    playingProg = null;
-    renderInfo();
-  }
 }
 
 function later(ms, fn) {
@@ -209,20 +193,6 @@ function playScale() {
     flash(`:scope > svg > .note[data-midi="${m}"]`, beat * 0.9);
   }));
   later(seq.length * beat, stop);
-}
-
-function playProgression(i) {
-  stop();
-  $('stop').hidden = false;
-  const p = info.progressions[i];
-  const bar = 60000 / bpm * 2;
-  p.degrees.forEach((d, k) => later(k * bar, () => {
-    playingProg = i;
-    w.degree = d;
-    render();
-    audio.chord(w.chord_midi(d), 0, bar / 1000 * 0.95, true);
-  }));
-  later(p.degrees.length * bar, stop);
 }
 
 // ---------- wheel input ----------
@@ -303,13 +273,17 @@ $('bpm').addEventListener('input', (e) => {
   save();
 });
 
+$('toggle-info').addEventListener('click', (e) => {
+  infoEl.hidden = !infoEl.hidden;
+  e.currentTarget.setAttribute('aria-expanded', String(!infoEl.hidden));
+  e.currentTarget.textContent = infoEl.hidden ? 'Show chord details' : 'Hide chord details';
+});
+
 $('play-scale').addEventListener('click', playScale);
 $('play-chord').addEventListener('click', playChord);
 $('stop').addEventListener('click', stop);
 
 infoEl.addEventListener('click', (e) => {
-  const prog = e.target.closest('[data-prog]');
-  if (prog) return playProgression(Number(prog.dataset.prog));
   const row = e.target.closest('tr[data-deg]');
   if (row) selectDegree(Number(row.dataset.deg));
 });

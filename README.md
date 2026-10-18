@@ -15,7 +15,9 @@ and mode of that key.
 - Chromatic or circle-of-fifths layout.
 - A treble staff with the key signature, the selected mode and its chord, with
   note names and step numbers (1 2 ♭3 …).
-- Sound: notes, chords, scales and common progressions (pop, ii–V–I, canon …).
+- Sound: notes, chords and scales, with a tempo control.
+- Chord details (all seven chords, their notes and roles) behind a toggle
+  under the staff.
 - A built-in manual with a worked example (Blue Bossa).
 - Installable on Android as an app (PWA) and works offline.
 
