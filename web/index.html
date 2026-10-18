@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ChordWheel</title>
+  <meta name="description" content="Turn the wheel to find the notes, chords and modes of any key.">
+  <meta name="theme-color" content="#1f2a44">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>ChordWheel</h1>
+      <button id="open-manual" title="Open the manual">? Manual</button>
+    </div>
+    <div class="settings">
+      <div class="seg" role="radiogroup" aria-label="Note names" id="acc">
+        <button data-v="0" title="Name black keys with sharps">♯</button>
+        <button data-v="1" title="Name black keys with flats">♭</button>
+        <button data-v="2" title="Spell notes the way the current key does">Auto</button>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Chord size" id="size">
+        <button data-v="1" title="Four-note seventh chords">7ths</button>
+        <button data-v="0" title="Three-note triads">Triads</button>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Wheel layout" id="layout">
+        <button data-v="0" title="Notes in chromatic order, one semitone per slot">Chromatic</button>
+        <button data-v="1" title="Notes around the circle of fifths">Fifths</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="wheel-area">
+      <div id="wheel" aria-live="polite"></div>
+      <div class="wheel-controls">
+        <button id="ccw" title="Turn the inner wheel counter-clockwise">⟲</button>
+        <label>Tonic <select id="tonic"></select></label>
+        <label>Mode <select id="mode"></select></label>
+        <button id="cw" title="Turn the inner wheel clockwise">⟳</button>
+      </div>
+      <p class="hint">Drag the inner wheel to change key. Tap a degree to hear its chord, or a note to hear it.</p>
+    </section>
+
+    <section class="info" id="info"></section>
+  </main>
+
+  <section class="staff-area">
+    <div class="staff-head">
+      <h2 id="staff-title"></h2>
+      <div class="play">
+        <button id="play-scale">▶ Scale</button>
+        <button id="play-chord">▶ Chord</button>
+        <button id="stop" hidden>■ Stop</button>
+        <label class="tempo">Tempo <input id="bpm" type="range" min="50" max="180" step="5" value="100"> <span id="bpm-val"></span></label>
+      </div>
+    </div>
+    <div id="staff"></div>
+  </section>
+
+  <footer>
+    <details>
+      <summary>How to use the wheel</summary>
+      <p>The outer ring holds the 12 notes. The inner wheel holds the seven chords of a major key, built on its seven <em>degrees</em> (I to vii). Turn the inner wheel so that <strong>I</strong> points at a note, and that note becomes the key: every degree now sits over the note its chord is built on. With I on C, ii sits on D (Dm7), V on G (G7), and so on.</p>
+      <p>The empty slots are notes outside the key. The highlighted notes on the outer ring are the notes of the key; the coloured ones are the notes of the selected chord.</p>
+      <p>Each degree also starts a <em>mode</em>: the same seven notes, but heard from a different home note. Tap ii with I on C, and the staff shows D Dorian. Use the Tonic and Mode menus to jump straight to, say, A Phrygian.</p>
+    </details>
+    <details>
+      <summary>A little theory</summary>
+      <p><strong>Roman numerals</strong> name chords by their position in the key, so the same progression works in every key. Upper case (I, IV, V) are major chords, lower case (ii, iii, vi) are minor, and vii is diminished.</p>
+      <p><strong>Home, Away and Tension</strong> describe what a chord tends to do. Home chords (I, iii, vi) feel at rest. Away chords (ii, IV) move away from home. Tension chords (V, vii) want to resolve back to I.</p>
+      <p><strong>Seventh chords</strong> add a fourth note (the seventh note of the scale counting up from the chord's root) for a richer sound. Switch to Triads for the simpler three-note versions.</p>
+      <p><strong>The circle of fifths</strong> layout puts keys that share the most notes next to each other. One click clockwise adds a sharp; one click counter-clockwise adds a flat.</p>
+      <p><strong>The numbers</strong> under the staff (1 2 ♭3 …) compare the mode with the major scale on the same tonic: ♭3 means the third note is a semitone lower than in major.</p>
+    </details>
+  </footer>
+
+  <dialog id="manual" aria-label="Manual">
+    <div class="manual-bar">
+      <strong>Manual</strong>
+      <a href="manual.html" target="_blank" rel="noopener">Open in a new tab</a>
+      <button id="close-manual" aria-label="Close the manual">✕</button>
+    </div>
+    <iframe src="manual.html" title="ChordWheel manual" loading="lazy"></iframe>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
