@@ -12,13 +12,21 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const chance = (p) => Math.random() < p;
 
 // ---------- instruments ----------
+//
+// Every pitched note is one oscillator with a custom waveform plus one filter
+// and one gain, and every envelope ramps smoothly in and out. Keeping the
+// graph this small (and the context on its large "playback" buffer) is what
+// lets a tablet render the whole band without crackles.
 
 function makeOut(ctx) {
   const comp = ctx.createDynamicsCompressor();
-  comp.threshold.value = -16;
-  comp.ratio.value = 3;
+  comp.threshold.value = -14;
+  comp.knee.value = 12;
+  comp.ratio.value = 4;
+  comp.attack.value = 0.01;
+  comp.release.value = 0.2;
   const out = ctx.createGain();
-  out.gain.value = 0.55;
+  out.gain.value = 0.4;
   out.connect(comp).connect(ctx.destination);
   return out;
 }
@@ -31,39 +39,51 @@ function noise(ctx) {
   return buf;
 }
 
-function tone(ctx, out, { midi, t, dur, vel, type = 'triangle', cutoff = 2000, attack = 0.005, partials = [[1, 1]] }) {
+/** A waveform from harmonic amplitudes (index 0 is the fundamental). */
+function wave(ctx, harmonics) {
+  const imag = new Float32Array([0, ...harmonics]);
+  return ctx.createPeriodicWave(new Float32Array(imag.length), imag);
+}
+
+function makeWaves(ctx) {
+  return {
+    bass: wave(ctx, [1, 0.35, 0.1]),
+    piano: wave(ctx, [1, 0.3, 0.11, 0.05, 0.03]),
+    guitar: wave(ctx, [0.5, 0.25, 0.17, 0.12, 0.1, 0.08, 0.06, 0.05]),
+  };
+}
+
+function tone(k, { midi, t, dur, vel, wave, cutoff = 2000, attack = 0.008, sustain = 0.3, release = 0.06 }) {
+  const { ctx, out } = k;
+  const end = t + dur;
   const g = ctx.createGain();
   const lp = ctx.createBiquadFilter();
   lp.type = 'lowpass';
   lp.frequency.setValueAtTime(cutoff, t);
-  lp.frequency.exponentialRampToValueAtTime(Math.max(200, cutoff / 3), t + dur);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(200, cutoff / 3), end);
   g.gain.setValueAtTime(0, t);
   g.gain.linearRampToValueAtTime(vel, t + attack);
-  g.gain.exponentialRampToValueAtTime(vel * 0.3, t + dur * 0.5);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.08);
-  lp.connect(g).connect(out);
-  for (const [mult, level] of partials) {
-    const o = ctx.createOscillator();
-    const og = ctx.createGain();
-    o.type = type;
-    o.frequency.value = freq(midi) * mult;
-    og.gain.value = level;
-    o.connect(og).connect(lp);
-    o.start(t);
-    o.stop(t + dur + 0.1);
-  }
+  g.gain.setTargetAtTime(vel * sustain, t + attack, Math.max(0.03, dur * 0.35));
+  g.gain.setTargetAtTime(0, end, release);
+  const o = ctx.createOscillator();
+  o.setPeriodicWave(wave);
+  o.frequency.value = freq(midi);
+  o.connect(lp).connect(g).connect(out);
+  o.start(t);
+  o.stop(end + release * 8);
 }
 
-const bass = (ctx, out, midi, t, dur) =>
-  tone(ctx, out, { midi, t, dur, vel: 0.5, type: 'sine', cutoff: 900, attack: 0.01, partials: [[1, 1], [2, 0.35], [3, 0.1]] });
+const bass = (k, midi, t, dur) =>
+  tone(k, { midi, t, dur, vel: 0.5, wave: k.waves.bass, cutoff: 900, attack: 0.012, sustain: 0.45 });
 
-const piano = (ctx, out, midi, t, dur) =>
-  tone(ctx, out, { midi, t, dur, vel: 0.11, type: 'triangle', cutoff: 2600, partials: [[1, 1], [2, 0.3], [4, 0.05]] });
+const piano = (k, midi, t, dur) =>
+  tone(k, { midi, t, dur, vel: 0.11, wave: k.waves.piano, cutoff: 2600, attack: 0.01, sustain: 0.55, release: 0.12 });
 
-const guitar = (ctx, out, midi, t, dur, vel = 0.17) =>
-  tone(ctx, out, { midi, t, dur, vel, type: 'sawtooth', cutoff: 1500, attack: 0.004, partials: [[1, 0.5], [2, 0.12]] });
+const guitar = (k, midi, t, dur, vel = 0.17) =>
+  tone(k, { midi, t, dur, vel, wave: k.waves.guitar, cutoff: 1500, attack: 0.006 });
 
-function hit(ctx, out, buf, t, { vel, type, f, q = 1, decay }) {
+function hit(k, t, { vel, type, f, q = 1, decay }) {
+  const { ctx, out, buf } = k;
   const src = ctx.createBufferSource();
   src.buffer = buf;
   const filt = ctx.createBiquadFilter();
@@ -71,27 +91,30 @@ function hit(ctx, out, buf, t, { vel, type, f, q = 1, decay }) {
   filt.frequency.value = f;
   filt.Q.value = q;
   const g = ctx.createGain();
-  g.gain.setValueAtTime(vel, t);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vel, t + 0.002);
+  g.gain.setTargetAtTime(0, t + 0.002, decay / 4);
   src.connect(filt).connect(g).connect(out);
   src.start(t, Math.random() * 0.5);
-  src.stop(t + decay + 0.05);
+  src.stop(t + decay * 2);
 }
 
-const ride = (ctx, out, buf, t, vel) => hit(ctx, out, buf, t, { vel, type: 'bandpass', f: 7200, q: 2.5, decay: 0.45 });
-const hihat = (ctx, out, buf, t) => hit(ctx, out, buf, t, { vel: 0.2, type: 'highpass', f: 8000, decay: 0.05 });
-const snare = (ctx, out, buf, t, vel) => hit(ctx, out, buf, t, { vel, type: 'bandpass', f: 1800, q: 0.8, decay: 0.12 });
+const ride = (k, t, vel) => hit(k, t, { vel, type: 'bandpass', f: 7200, q: 2.5, decay: 0.45 });
+const hihat = (k, t) => hit(k, t, { vel: 0.2, type: 'highpass', f: 8000, decay: 0.05 });
+const snare = (k, t, vel) => hit(k, t, { vel, type: 'bandpass', f: 1800, q: 0.8, decay: 0.12 });
 
-function kick(ctx, out, t, vel) {
+function kick(k, t, vel) {
+  const { ctx, out } = k;
   const o = ctx.createOscillator();
   const g = ctx.createGain();
   o.frequency.setValueAtTime(110, t);
   o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
-  g.gain.setValueAtTime(vel, t);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vel, t + 0.003);
+  g.gain.setTargetAtTime(0, t + 0.003, 0.05);
   o.connect(g).connect(out);
   o.start(t);
-  o.stop(t + 0.25);
+  o.stop(t + 0.4);
 }
 
 // ---------- musical choices ----------
@@ -128,7 +151,13 @@ function voicing(h) {
 }
 
 // Comping rhythms, in beats from the start of the bar (0.67 is a swung "and").
-const COMPS = [[0, 1.67], [1.67, 3.67], [0.67, 2], [1, 3], [2.67], [0, 2.67, 3.67], [1.67]];
+// Each chord rings until just before the next one, so the comping is legato.
+const COMPS = [[0], [0, 2], [0, 1.67], [0, 2.67], [0.67, 2.67], [0, 1.67, 3]];
+
+/** How long each comp hit rings, in beats: up to the next hit, the last one to the bar line. */
+function compLengths(rhythm) {
+  return rhythm.map((b, i) => Math.max(0.9, (i + 1 < rhythm.length ? rhythm[i + 1] : 4) - b - 0.1));
+}
 
 /** One bar of guitar: a scale line in swung eighths, or triads from the scale. */
 function guitarBar(h, prev) {
@@ -169,9 +198,15 @@ function guitarBar(h, prev) {
  * wheel changes what the band plays. Returns a function that stops the jam.
  */
 export function startJam({ harmony, bpm = 120, seconds = 60, onBar = () => {}, onEnd = () => {} }) {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const out = makeOut(ctx);
-  const buf = noise(ctx);
+  const AC = window.AudioContext || window.webkitAudioContext;
+  let ctx;
+  try {
+    ctx = new AC({ latencyHint: 'playback' });
+  } catch {
+    ctx = new AC();
+  }
+  const k = { ctx, out: makeOut(ctx), buf: noise(ctx), waves: makeWaves(ctx) };
+  const { out } = k;
   const beat = 60 / Math.max(80, Math.min(220, bpm));
   const bars = Math.max(4, Math.round(seconds / (beat * 4)));
   let bar = 0;
@@ -196,36 +231,37 @@ export function startJam({ harmony, bpm = 120, seconds = 60, onBar = () => {}, o
     // Drums: ride "ding, ding-a, ding, ding-a", hi-hat on 2 and 4, feathered kick.
     for (const [b, v] of [[0, 0.32], [1, 0.4], [1.67, 0.22], [2, 0.32], [3, 0.4], [3.67, 0.22]]) {
       if (final && b > 0) break;
-      ride(ctx, out, buf, at(b), v);
+      ride(k, at(b), v);
     }
     for (let b = 0; b < 4 && !final; b++) {
-      kick(ctx, out, at(b), 0.18);
-      if (b % 2) hihat(ctx, out, buf, at(b));
+      kick(k, at(b), 0.18);
+      if (b % 2) hihat(k, at(b));
     }
-    if (!final && chance(0.35)) snare(ctx, out, buf, at(pick([1.67, 2.67, 3.67])), 0.12);
+    if (!final && chance(0.35)) snare(k, at(pick([1.67, 2.67, 3.67])), 0.12);
 
     // Bass.
     const walk = walkBar(h, bassPrev);
     if (final) {
-      bass(ctx, out, walk[0], at(0), beat * 3);
+      bass(k, walk[0], at(0), beat * 3);
     } else {
-      walk.forEach((m, i) => bass(ctx, out, m, at(i), beat * 0.9));
+      walk.forEach((m, i) => bass(k, m, at(i), beat * 0.9));
       bassPrev = walk[0];
     }
 
     // Piano.
     const v = voicing(h);
     const rhythm = final ? [0] : pick(COMPS);
-    for (const b of rhythm) v.forEach((m) => piano(ctx, out, m, at(b) + Math.random() * 0.01, final ? beat * 3 : beat * 0.7));
+    const lengths = final ? [3] : compLengths(rhythm);
+    rhythm.forEach((b, i) => v.forEach((m) => piano(k, m, at(b) + Math.random() * 0.01, lengths[i] * beat)));
 
     // Guitar improvises after a one-bar intro.
     if (final) {
       const top = nearest(h.chord[h.chord.length - 1], 72, 64, 79);
-      guitar(ctx, out, top, at(0), beat * 3, 0.15);
+      guitar(k, top, at(0), beat * 3, 0.15);
     } else if (!intro) {
       const g = guitarBar(h, guitarPrev);
       for (const e of g.events) {
-        e.notes.forEach((m, i) => guitar(ctx, out, m, at(e.beat) + i * 0.02, e.dur * beat, e.accent ? 0.2 : 0.16));
+        e.notes.forEach((m, i) => guitar(k, m, at(e.beat) + i * 0.02, e.dur * beat, e.accent ? 0.2 : 0.16));
       }
       guitarPrev = g.last;
     }
