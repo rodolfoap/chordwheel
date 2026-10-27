@@ -1,10 +1,10 @@
 // A one-minute swing jam over the selected chord and scale: walking bass,
-// piano comping, brushes-style drums and a guitar improvising lines and
-// triads. Self-contained: it has its own audio context and only reads the
+// piano comping, brushes-style drums and a guitar playing the scale and
+// arpeggios. Self-contained: it has its own audio context and only reads the
 // harmony through the `harmony` callback, so the rest of the app never
 // depends on it.
 
-const LOOKAHEAD = 0.15; // seconds of audio scheduled ahead of time
+const LOOKAHEAD = 1.0; // seconds before a bar starts that it gets rendered
 const TICK_MS = 25;
 
 const freq = (m) => 440 * Math.pow(2, (m - 69) / 12);
@@ -13,21 +13,17 @@ const chance = (p) => Math.random() < p;
 
 // ---------- instruments ----------
 //
-// Every pitched note is one oscillator with a custom waveform plus one filter
-// and one gain, and every envelope ramps smoothly in and out. Keeping the
-// graph this small (and the context on its large "playback" buffer) is what
-// lets a tablet render the whole band without crackles.
+// Each bar is rendered ahead of time in an OfflineAudioContext, and the live
+// context only plays the finished bars back. The live audio thread therefore
+// does almost no work, so a slow tablet can't fall behind and crackle.
 
+// A plain gain, no compressor: browsers add make-up gain to compressors, which
+// pumped and distorted the mix. Each rendered bar peaks near 1, so this keeps
+// the overall level well under clipping.
 function makeOut(ctx) {
-  const comp = ctx.createDynamicsCompressor();
-  comp.threshold.value = -14;
-  comp.knee.value = 12;
-  comp.ratio.value = 4;
-  comp.attack.value = 0.01;
-  comp.release.value = 0.2;
   const out = ctx.createGain();
   out.gain.value = 0.4;
-  out.connect(comp).connect(ctx.destination);
+  out.connect(ctx.destination);
   return out;
 }
 
@@ -159,35 +155,31 @@ function compLengths(rhythm) {
   return rhythm.map((b, i) => Math.max(0.9, (i + 1 < rhythm.length ? rhythm[i + 1] : 4) - b - 0.1));
 }
 
-/** One bar of guitar: a scale line in swung eighths, or triads from the scale. */
-function guitarBar(h, prev) {
-  const scale = [];
-  for (let m = 55; m <= 81; m++) if (h.scale.includes(m % 12)) scale.push(m);
-  const events = [];
-  if (chance(0.3)) {
-    // Triads built on scale notes, stacked in thirds.
-    for (const beat of pick([[0, 2], [1.67, 3], [0.67, 2.67], [0]])) {
-      const i = Math.floor(Math.random() * (scale.length - 5));
-      events.push({ beat, notes: [scale[i], scale[i + 2], scale[i + 4]], dur: 0.8 });
-    }
-    return { events, last: prev };
+// Swung eighth-note positions in a bar, in beats (0.67 is a swung "and").
+const EIGHTHS = [0, 0.67, 1, 1.67, 2, 2.67, 3, 3.67];
+
+/**
+ * One bar of guitar, eight swung eighths. The guitar works in a four-bar
+ * cycle: the scale up from the tonic to its octave, back down, then two bars
+ * of arpeggios of the current chord, each going up or down at random.
+ */
+function guitarBar(h, n) {
+  let line;
+  const step = n % 4;
+  if (step < 2) {
+    const tonic = nearest(h.scale[0], 62, 57, 68);
+    line = [];
+    for (let m = tonic; line.length < 8; m++) if (h.scale.includes(m % 12)) line.push(m);
+    if (step === 1) line.reverse();
+  } else {
+    // Chord tones over two octaves, starting from a random inversion.
+    const tones = [];
+    for (let m = 55; m <= 88; m++) if (h.chord.includes(m % 12)) tones.push(m);
+    const start = Math.floor(Math.random() * Math.min(h.chord.length, tones.length - 7));
+    line = tones.slice(start, start + 8);
+    if (chance(0.5)) line.reverse();
   }
-  let idx = Math.max(0, scale.findIndex((m) => m >= prev));
-  const restBeats = chance(0.4) ? Math.floor(Math.random() * 4) : -1;
-  for (let e = 0; e < 8; e++) {
-    const beat = Math.floor(e / 2) + (e % 2 ? 0.67 : 0);
-    if (Math.floor(beat) === restBeats || chance(0.12)) continue;
-    idx = Math.min(scale.length - 1, Math.max(0, idx + pick([-2, -1, -1, 1, 1, 2, 3, -3])));
-    let note = scale[idx];
-    // Land on chord tones on the beat.
-    if (e % 2 === 0 && !h.chord.includes(note % 12) && chance(0.6)) {
-      const up = scale.slice(idx).find((m) => h.chord.includes(m % 12));
-      if (up) note = up;
-    }
-    events.push({ beat, notes: [note], dur: e % 2 ? 0.3 : 0.5, accent: e % 2 === 1 });
-  }
-  const last = events.length ? events[events.length - 1].notes[0] : prev;
-  return { events, last };
+  return line.map((m, i) => ({ beat: EIGHTHS[i], notes: [m], dur: i % 2 ? 0.35 : 0.6, accent: i % 2 === 1 }));
 }
 
 // ---------- the jam ----------
@@ -205,19 +197,23 @@ export function startJam({ harmony, bpm = 120, seconds = 60, onBar = () => {}, o
   } catch {
     ctx = new AC();
   }
-  const k = { ctx, out: makeOut(ctx), buf: noise(ctx), waves: makeWaves(ctx) };
-  const { out } = k;
+  const out = makeOut(ctx);
+  const buf = noise(ctx);
   const beat = 60 / Math.max(80, Math.min(220, bpm));
   const bars = Math.max(4, Math.round(seconds / (beat * 4)));
   let bar = 0;
-  let barStart = ctx.currentTime + 0.1;
+  let barStart = ctx.currentTime + 0.4;
   let bassPrev = 38;
-  let guitarPrev = 67;
   let stopped = false;
 
-  const at = (b) => barStart + b * beat;
+  const at = (b) => b * beat;
+  const barSamples = Math.ceil((beat * 6 + 1.5) * ctx.sampleRate);
 
   function scheduleBar() {
+    const off = new OfflineAudioContext(1, barSamples, ctx.sampleRate);
+    const offOut = off.createGain();
+    offOut.connect(off.destination);
+    const k = { ctx: off, out: offOut, buf, waves: makeWaves(off) };
     let h;
     try {
       h = harmony();
@@ -254,17 +250,26 @@ export function startJam({ harmony, bpm = 120, seconds = 60, onBar = () => {}, o
     const lengths = final ? [3] : compLengths(rhythm);
     rhythm.forEach((b, i) => v.forEach((m) => piano(k, m, at(b) + Math.random() * 0.01, lengths[i] * beat)));
 
-    // Guitar improvises after a one-bar intro.
+    // Guitar plays scales and arpeggios after a one-bar intro.
     if (final) {
       const top = nearest(h.chord[h.chord.length - 1], 72, 64, 79);
       guitar(k, top, at(0), beat * 3, 0.15);
     } else if (!intro) {
-      const g = guitarBar(h, guitarPrev);
-      for (const e of g.events) {
+      for (const e of guitarBar(h, bar - 1)) {
         e.notes.forEach((m, i) => guitar(k, m, at(e.beat) + i * 0.02, e.dur * beat, e.accent ? 0.2 : 0.16));
       }
-      guitarPrev = g.last;
     }
+
+    const when = barStart;
+    off.startRendering().then((rendered) => {
+      if (stopped) return;
+      const src = ctx.createBufferSource();
+      src.buffer = rendered;
+      src.connect(out);
+      const now = ctx.currentTime;
+      if (when >= now) src.start(when);
+      else src.start(now, now - when);
+    }).catch((err) => console.error('Jam bar failed', err));
 
     onBar(bar, bars);
     bar++;
