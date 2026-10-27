@@ -329,6 +329,35 @@ window.addEventListener('message', (e) => {
   location.hash = e.data.wheel;
 });
 
+// ---------- swing jam (optional; lives in jam.js) ----------
+
+let stopJam = null;
+const jamBtn = $('jam');
+function jamEnded() {
+  stopJam = null;
+  jamBtn.textContent = '▶ Jam';
+}
+jamBtn.addEventListener('click', async () => {
+  if (stopJam) return stopJam();
+  try {
+    const { startJam } = await import('./jam.js');
+    jamBtn.textContent = '■ Stop jam';
+    stopJam = startJam({
+      // Read live every bar, so turning the wheel changes the harmony.
+      harmony: () => ({
+        chord: Array.from(w.chord_midi(w.degree), (m) => m % 12),
+        scale: info.scale_midi.slice(0, 7).map((m) => m % 12),
+      }),
+      bpm: Math.max(120, bpm + 40),
+      seconds: 60,
+      onEnd: jamEnded,
+    });
+  } catch (err) {
+    console.error('Jam failed', err);
+    jamEnded();
+  }
+});
+
 load();
 render();
 

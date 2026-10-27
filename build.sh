@@ -12,6 +12,6 @@ if command -v wasm-opt >/dev/null 2>&1; then
   wasm-opt -Os web/pkg/chordwheel_bg.wasm -o web/pkg/chordwheel_bg.wasm
 fi
 # Give the service worker a new cache name whenever the build changes.
-hash=$(cat web/pkg/* web/app.js web/audio.js web/index.html web/manual.html web/style.css web/manifest.webmanifest | sha256sum | cut -c1-10)
+hash=$(cat web/pkg/* web/app.js web/audio.js web/jam.js web/index.html web/manual.html web/style.css web/manifest.webmanifest | sha256sum | cut -c1-10)
 sed -i "s/^const VERSION = .*/const VERSION = 'cw-$hash';/" web/sw.js
 echo "Built web/pkg ($hash)"
