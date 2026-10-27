@@ -280,12 +280,6 @@ $('bpm').addEventListener('input', (e) => {
   save();
 });
 
-$('toggle-info').addEventListener('click', (e) => {
-  infoEl.hidden = !infoEl.hidden;
-  e.currentTarget.setAttribute('aria-expanded', String(!infoEl.hidden));
-  e.currentTarget.textContent = infoEl.hidden ? 'Show chord details' : 'Hide chord details';
-});
-
 $('play-scale').addEventListener('click', playScale);
 $('play-chord').addEventListener('click', playChord);
 $('stop').addEventListener('click', stop);
