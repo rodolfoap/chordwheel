@@ -29,7 +29,9 @@ struct ChordInfo {
 struct Info {
     key: String,
     signature: String,
-    relative_minor: String,
+    relative_minor: Option<String>,
+    family: u8,
+    modes: [&'static str; 7],
     mode: String,
     mode_name: &'static str,
     mode_description: &'static str,
@@ -104,6 +106,21 @@ impl Wheel {
         self.st.fifths = on;
     }
 
+    /// 0 = major, 1 = melodic minor. Switching keeps the selected mode's tonic.
+    #[wasm_bindgen(getter)]
+    pub fn family(&self) -> u8 {
+        self.st.family as u8
+    }
+    #[wasm_bindgen(setter)]
+    pub fn set_family(&mut self, i: u8) {
+        self.st.set_family(Family::from_index(i));
+    }
+
+    /// Turn the wheel so the selected mode starts on pitch class `pc`.
+    pub fn set_tonic(&mut self, pc: u8) {
+        self.st.set_tonic(pc % 12);
+    }
+
     /// Turn the inner wheel by whole slots (positive is clockwise).
     pub fn rotate(&mut self, steps: i32) {
         self.st.rotate(steps);
@@ -128,6 +145,14 @@ impl Wheel {
         render::staff(&self.st)
     }
 
+    pub fn guitar_svg(&self) -> String {
+        render::guitar(&self.st)
+    }
+
+    pub fn keyboard_svg(&self) -> String {
+        render::keyboard(&self.st)
+    }
+
     pub fn chord_midi(&self, d: usize) -> Vec<u8> {
         self.st.chord_midi(d % 7)
     }
@@ -140,6 +165,8 @@ impl Wheel {
     pub fn info_json(&self) -> String {
         let st = &self.st;
         let scale = st.scale();
+        let modes = st.family.modes();
+        let functions = st.family.functions();
         let chords = (0..7)
             .map(|d| ChordInfo {
                 degree: d,
@@ -147,19 +174,31 @@ impl Wheel {
                 name: st.chord_name(d),
                 quality: st.quality(d).long_name(),
                 notes: st.chord_notes(d).iter().map(|n| n.name()).collect(),
-                function: FUNCTIONS[d],
-                mode: MODES[d],
+                function: functions[d],
+                mode: modes[d],
                 midi: st.chord_midi(d),
             })
             .collect();
         let info = Info {
-            key: format!("{} major", scale[0].name()),
-            signature: key_signature_text(st.signature()),
-            relative_minor: format!("{} minor", scale[5].name()),
+            key: st.key_name(),
+            signature: match st.family {
+                Family::Major => key_signature_text(st.signature()),
+                Family::MelodicMinor => format!(
+                    "written with the {} minor key signature, {}, raising the 6th and 7th",
+                    scale[0].name(),
+                    key_signature_text(st.signature())
+                ),
+            },
+            relative_minor: match st.family {
+                Family::Major => Some(format!("{} minor", scale[5].name())),
+                Family::MelodicMinor => None,
+            },
+            family: st.family as u8,
+            modes,
             mode: st.mode_name(),
-            mode_name: MODES[st.degree],
-            mode_description: MODE_DESCRIPTIONS[st.degree],
-            formula: mode_formula(st.degree).to_vec(),
+            mode_name: modes[st.degree],
+            mode_description: st.family.descriptions()[st.degree],
+            formula: st.formula().to_vec(),
             scale: st.mode_notes().iter().map(|n| n.name()).collect(),
             scale_midi: st.mode_midi(),
             chord: st.degree,

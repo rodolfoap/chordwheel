@@ -13,6 +13,10 @@ and mode of that key.
   triads, each with its mode name (Ionian … Locrian).
 - Note names with sharps, flats, or spelled the way the key does (Auto).
 - Chromatic or circle-of-fifths layout.
+- Major scale (with its natural minor) or melodic minor, each with its seven
+  chords and modes (Dorian ♭2, Lydian dominant, Altered …).
+- A guitar neck (default) or piano keyboard showing the scale, the selected
+  chord and the tonic.
 - A treble staff with the key signature, the selected mode and its chord, with
   note names and step numbers (1 2 ♭3 …).
 - Sound: notes, chords and scales, with a tempo control.
