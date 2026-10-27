@@ -1,6 +1,6 @@
 // Offline support: serve from the network when possible, fall back to the
 // cache so the app also works without a connection once it has been opened.
-const VERSION = 'cw-0309ee5d2d';
+const VERSION = 'cw-46b8a0663a';
 const FILES = [
   './', 'index.html', 'manual.html', 'style.css', 'app.js', 'audio.js', 'manifest.webmanifest',
   'pkg/chordwheel.js', 'pkg/chordwheel_bg.wasm',

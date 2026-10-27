@@ -75,10 +75,31 @@ export class Wheel {
         return v1;
     }
     /**
+     * @returns {string}
+     */
+    guitar_svg() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.wheel_guitar_svg(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * @param {number} d
      */
     set degree(d) {
         wasm.wheel_set_degree(this.__wbg_ptr, d);
+    }
+    /**
+     * @param {number} i
+     */
+    set family(i) {
+        wasm.wheel_set_family(this.__wbg_ptr, i);
     }
     /**
      * @param {boolean} on
@@ -93,6 +114,21 @@ export class Wheel {
     get accidentals() {
         const ret = wasm.wheel_accidentals(this.__wbg_ptr);
         return ret;
+    }
+    /**
+     * @returns {string}
+     */
+    keyboard_svg() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.wheel_keyboard_svg(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
     /**
      * @param {boolean} on
@@ -140,6 +176,14 @@ export class Wheel {
     get degree() {
         const ret = wasm.wheel_degree(this.__wbg_ptr);
         return ret >>> 0;
+    }
+    /**
+     * 0 = major, 1 = melodic minor. Switching keeps the selected mode's tonic.
+     * @returns {number}
+     */
+    get family() {
+        const ret = wasm.wheel_family(this.__wbg_ptr);
+        return ret;
     }
     /**
      * @returns {boolean}
@@ -199,6 +243,13 @@ export class Wheel {
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
+    }
+    /**
+     * Turn the wheel so the selected mode starts on pitch class `pc`.
+     * @param {number} pc
+     */
+    set_tonic(pc) {
+        wasm.wheel_set_tonic(this.__wbg_ptr, pc);
     }
     /**
      * @returns {string}

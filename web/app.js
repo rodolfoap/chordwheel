@@ -1,8 +1,6 @@
 import init, { Wheel, ring_radii } from './pkg/chordwheel.js';
 import * as audio from './audio.js';
 
-const MAJOR = [0, 2, 4, 5, 7, 9, 11];
-const MODES = ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'];
 const STORE = 'chordwheel-settings';
 
 await init();
@@ -12,12 +10,14 @@ const [R_HUB, R_INNER] = ring_radii();
 const $ = (id) => document.getElementById(id);
 const wheelEl = $('wheel');
 const staffEl = $('staff');
+const instEl = $('instrument');
 const infoEl = $('info');
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
 let drag = 0;          // extra rotation of the inner wheel while dragging, in degrees
 let info = null;       // latest info from Rust
 let bpm = 100;
+let inst = 0;          // 0 = guitar, 1 = keyboard
 let playId = 0;
 let timers = [];
 
@@ -26,12 +26,14 @@ let timers = [];
 function load() {
   try {
     const s = JSON.parse(localStorage.getItem(STORE) || 'null') || {};
+    w.family = s.family ?? 0; // first: switching family turns the wheel
     w.key = s.key ?? 0;
     w.degree = s.degree ?? 0;
     w.accidentals = s.acc ?? 0;
     w.sevenths = s.sevenths ?? true;
     w.fifths = s.fifths ?? false;
     bpm = s.bpm ?? 100;
+    inst = s.inst ?? 0;
   } catch { /* storage unavailable: use defaults */ }
   fromHash();
 }
@@ -41,21 +43,23 @@ function load() {
 function fromHash() {
   const h = new URLSearchParams(location.hash.slice(1));
   const num = (k) => (h.has(k) && !Number.isNaN(Number(h.get(k))) ? Number(h.get(k)) : null);
+  if (num('m') !== null) w.family = num('m'); // first: switching family turns the wheel
   if (num('k') !== null) w.key = num('k');
   if (num('d') !== null) w.degree = num('d');
   if (num('a') !== null) w.accidentals = num('a');
   if (num('s') !== null) w.sevenths = num('s') === 1;
   if (num('f') !== null) w.fifths = num('f') === 1;
+  if (num('i') !== null) inst = num('i') === 1 ? 1 : 0;
 }
 
 function save() {
   try {
     localStorage.setItem(STORE, JSON.stringify({
       key: w.key, degree: w.degree, acc: w.accidentals,
-      sevenths: w.sevenths, fifths: w.fifths, bpm,
+      sevenths: w.sevenths, fifths: w.fifths, family: w.family, bpm, inst,
     }));
   } catch { /* ignore */ }
-  const hash = `#k=${w.key}&d=${w.degree}&a=${w.accidentals}&s=${w.sevenths ? 1 : 0}&f=${w.fifths ? 1 : 0}`;
+  const hash = `#k=${w.key}&d=${w.degree}&a=${w.accidentals}&s=${w.sevenths ? 1 : 0}&f=${w.fifths ? 1 : 0}&m=${w.family}&i=${inst}`;
   if (location.hash !== hash) history.replaceState(null, '', hash);
 }
 
@@ -80,7 +84,7 @@ function renderInfo() {
     <p>${esc(info.mode_description)}</p>
     <div class="facts">
       <span>Parent key <b>${esc(info.key)}</b> (${esc(info.signature)})</span>
-      <span>Relative minor <b>${esc(info.relative_minor)}</b></span>
+      ${info.relative_minor ? `<span>Relative minor <b>${esc(info.relative_minor)}</b></span>` : ''}
       <span>${esc(c.name)} is a <b>${esc(c.quality)}</b>: ${esc(c.notes.join(' '))}</span>
     </div>
     <h3>Chords in ${esc(info.key)}</h3>
@@ -93,9 +97,7 @@ function renderControls() {
     `<option value="${pc}">${esc(w.name_of(pc))}</option>`).join('');
   tonic.value = String(w.tonic());
   const mode = $('mode');
-  if (!mode.options.length) {
-    mode.innerHTML = MODES.map((m, i) => `<option value="${i}">${m}</option>`).join('');
-  }
+  mode.innerHTML = info.modes.map((m, i) => `<option value="${i}">${esc(m)}</option>`).join('');
   mode.value = String(w.degree);
   const seg = (id, v) => $(id).querySelectorAll('button').forEach((b) => {
     b.setAttribute('role', 'radio');
@@ -104,6 +106,8 @@ function renderControls() {
   seg('acc', w.accidentals);
   seg('size', w.sevenths ? 1 : 0);
   seg('layout', w.fifths ? 1 : 0);
+  seg('family', w.family);
+  seg('inst', inst);
   $('bpm').value = String(bpm);
   $('bpm-val').textContent = `${bpm}`;
   $('staff-title').textContent = `${info.mode}: ${info.scale.join(' ')}`;
@@ -112,6 +116,7 @@ function renderControls() {
 function render() {
   renderWheel();
   staffEl.innerHTML = w.staff_svg();
+  instEl.innerHTML = inst === 1 ? w.keyboard_svg() : w.guitar_svg();
   info = JSON.parse(w.info_json());
   renderInfo();
   renderControls();
@@ -249,7 +254,7 @@ $('cw').addEventListener('click', () => turn(1));
 $('ccw').addEventListener('click', () => turn(-1));
 
 $('tonic').addEventListener('change', (e) => {
-  w.key = (Number(e.target.value) - MAJOR[w.degree] + 12) % 12;
+  w.set_tonic(Number(e.target.value));
   render();
 });
 $('mode').addEventListener('change', (e) => {
@@ -266,6 +271,8 @@ const onSeg = (id, fn) => $(id).addEventListener('click', (e) => {
 onSeg('acc', (v) => { w.accidentals = v; });
 onSeg('size', (v) => { w.sevenths = v === 1; });
 onSeg('layout', (v) => { w.fifths = v === 1; });
+onSeg('family', (v) => { w.family = v; });
+onSeg('inst', (v) => { inst = v; });
 
 $('bpm').addEventListener('input', (e) => {
   bpm = Number(e.target.value);
@@ -286,6 +293,14 @@ $('stop').addEventListener('click', stop);
 infoEl.addEventListener('click', (e) => {
   const row = e.target.closest('tr[data-deg]');
   if (row) selectDegree(Number(row.dataset.deg));
+});
+
+instEl.addEventListener('click', (e) => {
+  const n = e.target.closest('[data-midi]');
+  if (!n) return;
+  audio.note(Number(n.dataset.midi), 0, 1.2);
+  n.classList.add('playing');
+  setTimeout(() => n.classList.remove('playing'), 500);
 });
 
 staffEl.addEventListener('click', (e) => {

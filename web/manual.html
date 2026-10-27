@@ -59,6 +59,8 @@
       <li><a href="#tour">A tour of the wheel</a></li>
       <li><a href="#controls">Controls</a></li>
       <li><a href="#bossa">Worked example: Blue Bossa</a></li>
+      <li><a href="#melodic">Melodic minor</a></li>
+      <li><a href="#instruments">Guitar neck and keyboard</a></li>
       <li><a href="#practice">Practising with the app</a></li>
       <li><a href="#install">Installing on Android</a></li>
       <li><a href="#words">Words you will meet</a></li>
@@ -81,7 +83,7 @@
     <li><strong>The centre</strong> shows the selected chord, its mode and the parent key.</li>
     <li><strong>The staff</strong> at the bottom shows the selected mode as a scale, with the key signature, the note names and the step numbers, followed by the selected chord.</li>
   </ul>
-  <p><a class="try" data-wheel="k=0&d=0&a=2&s=1&f=0" href="index.html#k=0&d=0&a=2&s=1&f=0">Show C major on the wheel</a></p>
+  <p><a class="try" data-wheel="k=0&d=0&a=2&s=1&f=0&m=0" href="index.html#k=0&d=0&a=2&s=1&f=0&m=0">Show C major on the wheel</a></p>
 
   <h2 id="controls">2. Controls</h2>
   <table>
@@ -94,6 +96,8 @@
     <tr><td>♯ / ♭ / Auto</td><td>Names the black keys with sharps or flats. <strong>Auto</strong> spells every note the way the current key does (B♭ in F major, F♯ in G major).</td></tr>
     <tr><td>7ths / Triads</td><td>Four-note seventh chords (Cmaj7) or three-note triads (C).</td></tr>
     <tr><td>Chromatic / Fifths</td><td>Lays both wheels out by semitones or around the circle of fifths.</td></tr>
+    <tr><td>Major / Mel. minor</td><td>Builds the inner wheel from the major scale (whose vi is the natural minor) or from the melodic minor scale. Switching keeps the selected mode's tonic. See <a href="#melodic">Melodic minor</a>.</td></tr>
+    <tr><td>Guitar / Keyboard</td><td>Shows the scale on a guitar neck or a piano keyboard under the staff. Tap a note to hear it.</td></tr>
   </table>
   <p>The address bar remembers the wheel's position, so you can bookmark a key or send it to someone.</p>
 
@@ -109,7 +113,7 @@
 
   <h3>Part 1: C minor, which is C Aeolian</h3>
   <p>C minor (the natural minor) is the <strong>Aeolian</strong> mode on C. On the wheel, Aeolian lives on degree <strong>vi</strong>, so turn the wheel until <strong>vim7</strong> sits over C. Degree I then points at E♭: C minor shares its notes with E♭ major, its <em>relative major</em>. You can also just choose Tonic <strong>C</strong> and Mode <strong>Aeolian</strong>.</p>
-  <p><a class="try" data-wheel="k=3&d=5&a=2&s=1&f=0" href="index.html#k=3&d=5&a=2&s=1&f=0">Show C Aeolian on the wheel</a></p>
+  <p><a class="try" data-wheel="k=3&d=5&a=2&s=1&f=0&m=0" href="index.html#k=3&d=5&a=2&s=1&f=0&m=0">Show C Aeolian on the wheel</a></p>
   <figure class="wheel">
     <img src="manual/c-aeolian.png" alt="The wheel with vim7 over C, showing C Aeolian in the key of E-flat major" width="547" height="595" loading="lazy">
     <figcaption>vim7 over C. Degree I points at E♭, the relative major.</figcaption>
@@ -131,7 +135,7 @@
 
   <h3>Part 2: D♭ major, which is D♭ Ionian</h3>
   <p>In bars 9–12 the tune slides into D♭ major for a classic <strong>ii–V–I</strong>. Turn the wheel so that <strong>Imaj7</strong> points at D♭ (Tonic <strong>D♭</strong>, Mode <strong>Ionian</strong>).</p>
-  <p><a class="try" data-wheel="k=1&d=0&a=2&s=1&f=0" href="index.html#k=1&d=0&a=2&s=1&f=0">Show D♭ Ionian on the wheel</a></p>
+  <p><a class="try" data-wheel="k=1&d=0&a=2&s=1&f=0&m=0" href="index.html#k=1&d=0&a=2&s=1&f=0&m=0">Show D♭ Ionian on the wheel</a></p>
   <figure class="wheel">
     <img src="manual/db-ionian.png" alt="The wheel with Imaj7 over D-flat" width="547" height="595" loading="lazy">
     <figcaption>Imaj7 over D♭: the bridge key.</figcaption>
@@ -155,7 +159,7 @@
 
   <h3>Why the change of key sounds smooth</h3>
   <p>Switch the layout to <strong>Fifths</strong>. Keys that share the most notes sit next to each other. E♭ major (the parent of C minor) and D♭ major are only two steps apart, so only two notes change: D becomes D♭ and G becomes G♭. Everything else stays the same.</p>
-  <p><a class="try" data-wheel="k=3&d=5&a=2&s=1&f=1" href="index.html#k=3&d=5&a=2&s=1&f=1">Show C Aeolian on the circle of fifths</a></p>
+  <p><a class="try" data-wheel="k=3&d=5&a=2&s=1&f=1&m=0" href="index.html#k=3&d=5&a=2&s=1&f=1&m=0">Show C Aeolian on the circle of fifths</a></p>
   <figure class="wheel">
     <img src="manual/fifths.png" alt="The wheel in circle-of-fifths layout, with the seven notes of C minor next to each other" width="547" height="595" loading="lazy">
     <figcaption>In the Fifths layout a key's seven notes sit together. Turn two clicks counter-clockwise to reach D♭.</figcaption>
@@ -169,7 +173,45 @@
     <tr><td>13–16</td><td>vi over C again</td><td>C D E♭ F G A♭ B♭ (B♮ over G7)</td></tr>
   </table>
 
-  <h2 id="practice">4. Practising with the app</h2>
+  <h2 id="melodic">4. Melodic minor</h2>
+  <p>The natural minor scale (Aeolian) has a weak pull home: its 7th note is a whole step below the tonic. The <strong>melodic minor</strong> raises the 6th and 7th notes, so it is a major scale with only the 3rd lowered: C D E♭ F G A B. Jazz musicians use it in both directions (classical music lowers the 6th and 7th again on the way down).</p>
+  <p>Press <strong>Mel. minor</strong> at the top and the inner wheel is rebuilt from that scale. Degree <strong>i</strong> points at the tonic, and the wheel shows its seven chords and modes. The staff writes the scale with the minor key signature and naturals on the raised notes.</p>
+  <p><a class="try" data-wheel="k=0&d=0&a=2&s=1&f=0&m=1" href="index.html#k=0&d=0&a=2&s=1&f=0&m=1">Show C melodic minor on the wheel</a></p>
+  <figure class="wheel">
+    <img src="manual/melodic-minor.png" alt="The wheel in melodic minor mode with i over C" width="547" height="595" loading="lazy">
+    <figcaption>C melodic minor: CmMaj7, Dm7, E♭maj7♯5, F7, G7, Am7♭5, Bm7♭5.</figcaption>
+  </figure>
+  <figure>
+    <img src="manual/melodic-minor-staff.png" alt="Staff showing C melodic minor with three flats and naturals on A and B" width="1068" height="256" loading="lazy">
+    <figcaption>Three flats in the signature, with naturals on A and B: the raised 6th and 7th.</figcaption>
+  </figure>
+  <table>
+    <tr><th>Degree</th><th>Chord in C</th><th>Mode</th><th>Use it over</th></tr>
+    <tr><td>i</td><td>CmMaj7</td><td>Melodic minor</td><td>minor chords that act as home, mMaj7 and m6 chords</td></tr>
+    <tr><td>ii</td><td>Dm7</td><td>Dorian ♭2</td><td>sus♭9 chords</td></tr>
+    <tr><td>♭III</td><td>E♭maj7♯5</td><td>Lydian augmented</td><td>maj7♯5 chords</td></tr>
+    <tr><td>IV</td><td>F7</td><td>Lydian dominant</td><td>7♯11 chords, dominants that don't resolve down a fifth</td></tr>
+    <tr><td>V</td><td>G7</td><td>Mixolydian ♭6</td><td>dominant chords in minor keys</td></tr>
+    <tr><td>vi</td><td>Am7♭5</td><td>Locrian ♮2</td><td>half-diminished chords, like the ii in a minor ii–V</td></tr>
+    <tr><td>vii</td><td>Bm7♭5</td><td>Altered</td><td>V7 chords with ♭9, ♯9, ♯11 or ♭13 (written 7alt)</td></tr>
+  </table>
+  <div class="note"><strong>Back to Blue Bossa.</strong> Jazz players often colour the G7 of bars 6 and 14 with the <strong>G Altered</strong> scale. Altered is the 7th mode of melodic minor, so turn the wheel until vii sits on G: degree i then points at A♭, and G Altered is A♭ melodic minor started on G. Over the Cm7 chords you can also try C melodic minor for a brighter minor sound.</div>
+  <p><a class="try" data-wheel="k=8&d=6&a=2&s=1&f=0&m=1" href="index.html#k=8&d=6&a=2&s=1&f=0&m=1">Show G Altered on the wheel</a></p>
+
+  <h2 id="instruments">5. Guitar neck and keyboard</h2>
+  <p>Under the staff the app shows the selected scale on an instrument: a <strong>guitar</strong> neck in standard tuning (high E string on top, as in tablature) or a two-octave piano <strong>keyboard</strong>. Switch with the buttons on the right of that panel.</p>
+  <figure>
+    <img src="manual/guitar.png" alt="Guitar neck showing C melodic minor, with the CmMaj7 chord notes in orange and the tonic C circled" width="1068" height="316" loading="lazy">
+    <figcaption>C melodic minor on the guitar: orange dots are the notes of CmMaj7, circled dots are the tonic C.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Orange</strong> dots are the notes of the selected chord. On the guitar, look for orange dots close together across neighbouring strings: those are chord shapes you can play.</li>
+    <li><strong>Circled</strong> dots are the tonic of the selected mode: start and end your scale runs there.</li>
+    <li><strong>Pale</strong> dots are the other notes of the scale.</li>
+    <li>Tap any dot or key to hear it. Select another degree on the wheel and the colours move to the new chord.</li>
+  </ul>
+
+  <h2 id="practice">6. Practising with the app</h2>
   <ol>
     <li>Pick a key and press <strong>▶ Scale</strong>. Sing or play along.</li>
     <li>Tap each degree in turn and listen: which chords sound like home, which want to move?</li>
@@ -178,7 +220,7 @@
     <li>Take a song you like, find its chords on the wheel, and you have found its key.</li>
   </ol>
 
-  <h2 id="install">5. Installing on Android</h2>
+  <h2 id="install">7. Installing on Android</h2>
   <ol>
     <li>Open <a href="https://rodolfoap.github.io/chordwheel/" target="_blank" rel="noopener">rodolfoap.github.io/chordwheel</a> in Chrome on the tablet.</li>
     <li>Open the ⋮ menu and choose <strong>Install app</strong> (or <strong>Add to Home screen</strong>).</li>
@@ -186,7 +228,7 @@
   </ol>
   <p>On a computer you can also run it locally with <code>python3 -m http.server -d web 8000</code> and open <a href="http://localhost:8000">localhost:8000</a>.</p>
 
-  <h2 id="words">6. Words you will meet</h2>
+  <h2 id="words">8. Words you will meet</h2>
   <table>
     <tr><td><strong>Key</strong></td><td>The set of seven notes a piece mostly uses, named after its home note.</td></tr>
     <tr><td><strong>Degree</strong></td><td>A note's position in the key, written as a roman numeral: I is the first note, V the fifth.</td></tr>
@@ -194,6 +236,8 @@
     <tr><td><strong>Tonic</strong></td><td>The home note of a key or mode.</td></tr>
     <tr><td><strong>Relative minor / major</strong></td><td>A minor and a major key that share all their notes, like C minor and E♭ major.</td></tr>
     <tr><td><strong>maj7, m7, 7, m7♭5</strong></td><td>Seventh chord types: major seventh, minor seventh, dominant seventh, half-diminished.</td></tr>
+    <tr><td><strong>mMaj7, maj7♯5</strong></td><td>The two seventh chords found only in melodic minor: minor-major seventh (a minor triad with a major 7th) and augmented major seventh.</td></tr>
+    <tr><td><strong>Melodic minor</strong></td><td>A minor scale with a raised 6th and 7th: major with only the 3rd lowered.</td></tr>
     <tr><td><strong>ii–V–I</strong></td><td>The most common chord move in jazz: Away, Tension, Home.</td></tr>
     <tr><td><strong>Key signature</strong></td><td>The sharps or flats at the start of the staff, which apply to every note of that letter.</td></tr>
     <tr><td><strong>Circle of fifths</strong></td><td>The 12 keys ordered so that neighbours differ by one sharp or flat.</td></tr>
